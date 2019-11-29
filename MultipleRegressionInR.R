@@ -7,3 +7,4 @@ existing<-read.csv("existingproductattributes2017.csv")
 
 #Explore data#
 summary(existing)
+str(existing)
