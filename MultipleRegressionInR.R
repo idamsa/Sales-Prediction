@@ -4,3 +4,6 @@
 library(readr)
 
 read.csv("existingproductattributes2017.csv")
+
+
+summary(existing)
