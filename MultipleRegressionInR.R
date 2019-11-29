@@ -3,4 +3,6 @@
 
 library(readr)
 
-read.csv("existingproductattributes2017.csv")
+existing<-read.csv("existingproductattributes2017.csv")
+
+
