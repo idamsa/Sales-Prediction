@@ -6,7 +6,16 @@ library(caret)
 library(corrplot)
 library(e1071)
 library (randomForest)
-library(ISLR) 
+library(ISLR)
+
+library(ggplot2)
+
+library(outliers)
+library(OneR)
+library(Hmisc)
+library(C50)
+library(rattle)
+library(rpart)
 # Reading the file
 existing<-read.csv("existingproductattributes2017.csv")
 
@@ -26,7 +35,7 @@ str(readyData)
 is.na(existing)
 existing$BestSellersRank <- NULL
 readyData$BestSellersRank <- NULL
-
+ready
 # Builind the correlation matrix
 corrData <- cor(readyData)
 
@@ -50,6 +59,7 @@ readyData <- readyData[-c(14:26)]
 readyData<- cbind(readyData,readyDatan) 
   View(readyData)
 readyData$ProductNum <- NULL
+readyData<-readyData[c(1:13,15,17,19,20,21)]
 
 #Splitting the data and set seed
 
@@ -70,6 +80,8 @@ linearmodel<-lm(Volume ~ .,training)
 summary(linearmodel)
 
 predictionslinearmodel <- predict(linearmodel, testing)
+predictionslinearmodel
+
 
 ### Building the SVM-model ###
 
@@ -82,7 +94,7 @@ summary(predictionSvm2)
 postResample(predictionSvm2, testing$Volume)
 
 #Not using tuned parameters(SVM)#
-svmModel <- svm(Volume~., data = training, kernel = "sigmoid", cost = 100, gamma = 0.01, scale = FALSE)
+svmModel <- svm(Volume~., data = training, kernel = "polynominal")
 print(svmModel)
 plot(svmModel, training)
 predictionSvm <-predict(svmModel, testing)
@@ -98,14 +110,16 @@ rfTuned <- tuneRF(x = testing, y = testing$Volume, mtryStart = 1)
 
 
 #Non-tuned RF#
-rfModel <- randomForest(Volume~., data = training, mtry = 26, ntree = 1000) 
+rfModel <- randomForest(Volume~., data = training,mtry=3,treesize=1000, importance=T)
 rfModel
 predictionRf <- predict(rfModel, testing)
 summary(predictionRf)
 postResample (predictionRf, testing$Volume)
-
+varImp(rfModel)
 
 ### Building k-NN model ###
 ctrl <- trainControl(method = "repeatedcv", repeats = 3)
 kNNmodel <- train(Volume~., data = training, method ="knn", trControl = ctrl)
 kNNmodel
+predictedknn <- predict(kNNmodel,testing)
+predictedknn                        
