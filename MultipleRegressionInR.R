@@ -2,19 +2,16 @@
 
 #Add library and files#
 library(readr)
-
 library(caret)
-install.packages("corrplot")
 library(corrplot)
 
-
+# Reading the file
 existing<-read.csv("existingproductattributes2017.csv")
 
 # Explore data#
 summary(existing)
 str(existing)
 
-View(existing)
 ## Pre-processing data##
 
 # Dummify the data
@@ -37,7 +34,19 @@ corrData
 # Heatmap correlation
 corrplot(corrData)
 
-# Removing unecessary features
-existing <- existing[c(5,7,9,10)]
-existing
+#Splitting the data
+
+inTrain <- createDataPartition(y= readyData$Volume,p=.75, list = FALSE)
+
+# Partitioning the data
+
+training <- readyData[ inTrain,]
+testing <- readyData[-inTrain,]
+training
+# Building the linear model
+
+linearmodel<-lm(Volume ~ .,training)
+
+# Summary linear model
+summary(linearmodel)
 
