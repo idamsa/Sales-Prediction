@@ -86,22 +86,15 @@ predictionslinearmodel
 ### Building the SVM-model ###
 
 #Using tuned parameters(SVM)#
-tuned_parameters<-tune.svm(Volume~., data = training, gamma = 10^(-6:-2), cost=10^(1:2))
+tuned_parameters<-tune.svm(Volume~., data = training, cost=10^(1:2))
 summary(tuned_parameters)
 tuneValues <- tuned_parameters$best.model
 predictionSvm2 <- predict(tuneValues, testing)
+
+
 summary(predictionSvm2)
 postResample(predictionSvm2, testing$Volume)
 
-#Not using tuned parameters(SVM)#
-svmModel <- svm(Volume~., data = training, kernel = "polynominal")
-print(svmModel)
-plot(svmModel, training)
-predictionSvm <-predict(svmModel, testing)
-predictionSvm
-summary(predictionSvm)
-
-postResample(predictionSvm, testing$Volume)
 
 ### Building Random Forest Model ###
 
@@ -123,3 +116,29 @@ kNNmodel <- train(Volume~., data = training, method ="knn", trControl = ctrl)
 kNNmodel
 predictedknn <- predict(kNNmodel,testing)
 predictedknn                        
+
+
+# Bring the new product data
+
+newProducts <- read.csv("newproductattributes2017.csv")
+
+# Dummyfying the new data
+
+newDataFrame2 <- dummyVars(" ~ .", data = newProducts)
+
+readyData2 <- data.frame(predict(newDataFrame2, newdata = newProducts))
+
+readyData2
+
+# Preprocessing the new data
+
+readyData2$BestSellersRank <- NULL
+readyData2$ProductNum <- NULL
+View(readyData2) 
+readyDatan2<-apply(readyData2[c(13:20)],2,normalize)
+readyData2 <- readyData2[-c(13:20)]
+readyData2<- cbind(readyData2,readyDatan2) 
+readyData2<-readyData2[c(1:13,22,24,26,27)]
+
+
+#  Applying the model to the new data
