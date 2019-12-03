@@ -115,12 +115,14 @@ summary(predictionSvm2)
 postResample(predictionSvm2, testing$Volume)
 
 
-#Graph SVM-model
+#Plotting SVM-model, predcidted
 
-SvmPredictedData<-cbind(testing$Volume, predictionSvm2) 
-ggplot(SvmPredictedData, aes(x=SvmPredictedData$volume, y=predictionSvm2)) + 
-         geom_point()
+testingSVM<- testing
+testingSVM<- cbind(testingSVM,predictionSvm2)
 
+ggplot(testingSVM, aes(x=predictionSvm2, y=Volume)) + 
+  geom_point()+
+  labs(title="Pred vs Actual SVM")
 
 ### Building Random Forest Model ###
 
@@ -129,7 +131,7 @@ rfTuned <- tuneRF(x = testing, y = testing$Volume, mtryStart = 1)
 
 
 # Applying Tuned RF
-rfModel <- rfTuned(Volume~., data = training)
+rfModel <- randomForest(Volume~., data = training, mtry=8)
 rfModel
 predictionRf <- predict(rfModel, testing)
 summary(predictionRf)
@@ -145,12 +147,14 @@ predictedknn
 
 # Ploting the observed vs predicted in RF
 
-testing2<- testing
-testing2<- cbind(testing2,predictionRf)
-
-ggplot(testing2, aes(x=predictionRf, y=Volume)) + 
+dataForPlot<-read.csv("existingproductattributes2017.csv")
+r<-rownames(testing)
+testingfull <- dataForPlot[c(r), ]
+testingfull<- cbind(testingfull,predictionRf)
+ggplot(testingfull, aes(x=predictionRf, y=Volume,col=ProductType)) +
   geom_point()+
-  labs(title="Pred vs Actual RF")
+  labs(title="Pred vs Actual RF")+
+  geom_line()
 
 # Bring the new product data
 
@@ -176,3 +180,17 @@ readyData2<-readyData2[c(1:13,22,24,26,27)]
 
 
 #  Applying the model to the new data
+predictionNew<- predict(rfModel, readyData2)
+predictionNew
+
+#Creating data frame with predicted values of volume for new data
+newProducts$predicted <- predictionNew
+newProducts <-newProducts[c(1:17,19)]
+newProducts$predicted<- round(newProducts$predicted, digits = 0)
+View(newProducts)
+
+
+#Creating plot for predicted volume of new products
+
+ggplot(newProducts, aes(x=predicted,fill=ProductType, bins=6)) +
+         geom_histogram()+labs(title="Predicted volume")
