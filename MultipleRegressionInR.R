@@ -7,45 +7,45 @@ library(corrplot)
 library(e1071)
 library (randomForest)
 library(ISLR)
-
 library(ggplot2)
-
 library(outliers)
 library(OneR)
 library(Hmisc)
 library(C50)
 library(rattle)
 library(rpart)
-# Reading the file
+
+#Reading the file
 existing<-read.csv("existingproductattributes2017.csv")
 
-# Explore data#
+#Explore data#
 summary(existing)
 str(existing)
 
-## Pre-processing data##
+##Pre-processing data##
 
-# Dummify the data
+#Dummify the data
 existingdummy <-dummyVars ("~.", data = existing)
 readyData <- data.frame(predict(existingdummy, newdata = existing))
 readyData
 str(readyData)
 
-# Removing Missing Values
+#Removing Missing Values
 is.na(existing)
 existing$BestSellersRank <- NULL
 readyData$BestSellersRank <- NULL
 ready
-# Builind the correlation matrix
+
+#Builind the correlation matrix
 corrData <- cor(readyData)
 
-# Prints the correlation matrix
+#Prints the correlation matrix
 corrData
 
-# Heatmap correlation
+#Heatmap correlation
 corrplot(corrData)
 
-# Removing highly correlated features
+#Removing highly correlated features
 readyData$x5StarReviews <- NULL
 
 #Normalize numerical features
@@ -66,7 +66,7 @@ readyData<-readyData[c(1:13,15,17,19,20,21)]
 set.seed(123)
 inTrain <- createDataPartition(y= readyData$Volume,p=.75, list = FALSE)
 
-# Partitioning the data
+#Partitioning the data
 
 training <- readyData[ inTrain,]
 testing <- readyData[-inTrain,]
@@ -76,7 +76,7 @@ training
 
 linearmodel<-lm(Volume ~ .,training)
 
-# Summary linear model
+#Summary linear model
 summary(linearmodel)
 
 predictionslinearmodel <- predict(linearmodel, testing)
@@ -86,7 +86,7 @@ predictionslinearmodel
 ### Building the SVM-model ###
 
 #Using tuned parameters(SVM)#
-tuned_parameters<-tune.svm(Volume~., data = training, cost=10^(1:2))
+tuned_parameters<-tune.svm(Volume~., data = training, epsilon = seq(0, 0.9, 0.1),  cost = 2^(2:8))
 summary(tuned_parameters)
 tuneValues <- tuned_parameters$best.model
 predictionSvm2 <- predict(tuneValues, testing)
@@ -94,6 +94,13 @@ predictionSvm2 <- predict(tuneValues, testing)
 
 summary(predictionSvm2)
 postResample(predictionSvm2, testing$Volume)
+
+
+#Graph SVM-model
+
+SvmPredictedData<-cbind(testing$Volume, predictionSvm2) 
+ggplot(SvmPredictedData, aes(x=SvmPredictedData$volume, y=predictionSvm2)) + 
+         geom_point()
 
 
 ### Building Random Forest Model ###
