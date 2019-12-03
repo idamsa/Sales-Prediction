@@ -7,15 +7,15 @@ library(corrplot)
 library(e1071)
 library (randomForest)
 library(ISLR)
-
 library(ggplot2)
-
 library(outliers)
 library(OneR)
 library(Hmisc)
 library(C50)
 library(rattle)
 library(rpart)
+
+
 # Reading the file
 existing<-read.csv("existingproductattributes2017.csv")
 
@@ -35,7 +35,7 @@ str(readyData)
 is.na(existing)
 existing$BestSellersRank <- NULL
 readyData$BestSellersRank <- NULL
-ready
+
 # Builind the correlation matrix
 corrData <- cor(readyData)
 
@@ -61,6 +61,20 @@ readyData<- cbind(readyData,readyDatan)
 readyData$ProductNum <- NULL
 readyData<-readyData[c(1:13,15,17,19,20,21)]
 
+# Outliers
+
+outlier_volume <- outlier(readyData$Volume,logical = TRUE)
+sum(outlier_volume)
+
+# Assigning the outliers to a vector
+
+find_outlierVolume <- which(outlier_volume == TRUE, arr.ind = TRUE)
+
+# Removing the outliers in vOLUME
+
+readyData= readyData[-find_outlierVolume,]
+
+
 #Splitting the data and set seed
 
 set.seed(123)
@@ -77,6 +91,7 @@ training
 linearmodel<-lm(Volume ~ .,training)
 
 # Summary linear model
+
 summary(linearmodel)
 
 predictionslinearmodel <- predict(linearmodel, testing)
@@ -98,25 +113,33 @@ postResample(predictionSvm2, testing$Volume)
 
 ### Building Random Forest Model ###
 
-# Tuned RF #
+# Tune the RF
 rfTuned <- tuneRF(x = testing, y = testing$Volume, mtryStart = 1)
 
 
-#Non-tuned RF#
-rfModel <- randomForest(Volume~., data = training,mtry=3,treesize=1000, importance=T)
+# Applying Tuned RF
+rfModel <- rfTuned(Volume~., data = training)
 rfModel
 predictionRf <- predict(rfModel, testing)
 summary(predictionRf)
 postResample (predictionRf, testing$Volume)
-varImp(rfModel)
+
 
 ### Building k-NN model ###
-ctrl <- trainControl(method = "repeatedcv", repeats = 3)
-kNNmodel <- train(Volume~., data = training, method ="knn", trControl = ctrl)
+
+kNNmodel <- train(Volume~., data = training, method ="knn")
 kNNmodel
 predictedknn <- predict(kNNmodel,testing)
 predictedknn                        
 
+# Ploting the observed vs predicted in RF
+
+testing2<- testing
+testing2<- cbind(testing2,predictionRf)
+
+ggplot(testing2, aes(x=predictionRf, y=Volume)) + 
+  geom_point()+
+  labs(title="Pred vs Actual RF")
 
 # Bring the new product data
 
