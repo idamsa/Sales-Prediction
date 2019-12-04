@@ -21,37 +21,39 @@ library(rpart)
 existing<-read.csv("existingproductattributes2017.csv")
 
 #Explore data#
+
 summary(existing)
 str(existing)
 
 ##Pre-processing data##
 
-#Dummify the data
+# Dummify the data
+
 existingdummy <-dummyVars ("~.", data = existing)
 readyData <- data.frame(predict(existingdummy, newdata = existing))
 readyData
 str(readyData)
 
-#Removing Missing Values
+# emoving Missing Values
 is.na(existing)
 existing$BestSellersRank <- NULL
 readyData$BestSellersRank <- NULL
 
 
-#Builind the correlation matrix
+# Builind the correlation matrix
 
 corrData <- cor(readyData)
 
-#Prints the correlation matrix
+# Prints the correlation matrix
 corrData
 
-#Heatmap correlation
+# Heatmap correlation
 corrplot(corrData)
 
-#Removing highly correlated features
+# Removing highly correlated features
 readyData$x5StarReviews <- NULL
 
-#Normalize numerical features
+# Normalize numerical features
 normalize <- function(x) {
   return ((x - min(x)) / (max(x) - min(x)))
 }
@@ -60,7 +62,7 @@ normalize <- function(x) {
 readyDatan<-apply(readyData[c(14:26)],2,normalize)
 readyData <- readyData[-c(14:26)]
 readyData<- cbind(readyData,readyDatan) 
-  View(readyData)
+View(readyData)
 readyData$ProductNum <- NULL
 readyData<-readyData[c(1:13,15,17,19,20,21)]
 
@@ -78,18 +80,18 @@ find_outlierVolume <- which(outlier_volume == TRUE, arr.ind = TRUE)
 readyData= readyData[-find_outlierVolume,]
 
 
-#Splitting the data and set seed
+# Splitting the data and set seed
 
 set.seed(123)
 inTrain <- createDataPartition(y= readyData$Volume,p=.75, list = FALSE)
 
-#Partitioning the data
+# Partitioning the data
 
 training <- readyData[ inTrain,]
 testing <- readyData[-inTrain,]
 training
 
-### Building the linear model###
+### Building the linear model ###
 
 linearmodel<-lm(Volume ~ .,training)
 
@@ -104,7 +106,8 @@ predictionslinearmodel
 
 ### Building the SVM-model ###
 
-#Using tuned parameters(SVM)#
+# Using tuned parameters(SVM)#
+
 tuned_parameters<-tune.svm(Volume~., data = training, epsilon = seq(0, 0.9, 0.1),  cost = 2^(2:8))
 summary(tuned_parameters)
 tuneValues <- tuned_parameters$best.model
@@ -115,7 +118,7 @@ summary(predictionSvm2)
 postResample(predictionSvm2, testing$Volume)
 
 
-#Plotting SVM-model, predcidted
+# Plotting SVM-model, predcidted
 
 testingSVM<- testing
 testingSVM<- cbind(testingSVM,predictionSvm2)
@@ -127,14 +130,19 @@ ggplot(testingSVM, aes(x=predictionSvm2, y=Volume)) +
 ### Building Random Forest Model ###
 
 # Tune the RF
+
 rfTuned <- tuneRF(x = testing, y = testing$Volume, mtryStart = 1)
 
 
 # Applying Tuned RF
+
 rfModel <- randomForest(Volume~., data = training, mtry=8)
 rfModel
 predictionRf <- predict(rfModel, testing)
 summary(predictionRf)
+
+# Erros metrics random forest
+
 postResample (predictionRf, testing$Volume)
 
 
@@ -180,10 +188,12 @@ readyData2<-readyData2[c(1:13,22,24,26,27)]
 
 
 #  Applying the model to the new data
+
 predictionNew<- predict(rfModel, readyData2)
 predictionNew
 
 #Creating data frame with predicted values of volume for new data
+
 newProducts$predicted <- predictionNew
 newProducts <-newProducts[c(1:17,19)]
 newProducts$predicted<- round(newProducts$predicted, digits = 0)
@@ -192,5 +202,13 @@ View(newProducts)
 
 #Creating plot for predicted volume of new products
 
-ggplot(newProducts, aes(x=predicted,fill=ProductType, bins=6)) +
-         geom_histogram()+labs(title="Predicted volume")
+ggplot(newProducts, aes(x=predicted,fill=ProductType)) +
+  geom_histogram(bins=10)+labs(title="Predicted volume")
+ 
+# PieChart
+
+ggplot(newProducts, aes(x="", fill=ProductType))+
+  geom_bar() + 
+  coord_polar(theta="y") +
+  labs(x=" ",y=" ", title = "Proportion of Product Type Sales Predict") +
+  theme_light()
