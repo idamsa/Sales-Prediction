@@ -1,0 +1,16 @@
+	ProductType	ProductNum	Price	x4StarReviews	x2StarReviews	x1StarReviews	PositiveServiceReview	NegativeServiceReview	Recommendproduct	ProfitMargin	Predicted Sales Volume	Profit
+1	PC	171	699	26	14	25	12	3	0.7	0.25	980	#VALUE!
+2	PC	172	860	11	10	21	7	5	0.6	0.2	843	
+3	Laptop	173	1199	10	3	11	11	5	0.8	0.1	962	
+4	Laptop	175	1199	2	1	1	2	1	0.6	0.15	176	
+5	Laptop	176	1999	1	3	0	0	1	0.3	0.23	77	
+6	Netbook	178	399.99	8	1	10	2	4	0.6	0.08	259	
+7	Netbook	180	329	112	31	47	28	16	0.7	0.09	1999	
+8	Netbook	181	439	18	22	18	5	16	0.4	0.11	1593	
+9	Netbook	183	330	4	1	0	1	0	0.7	0.09	66	
+10	Tablet	186	629	66	21	36	28	9	0.8	0.1	1632	
+11	Tablet	187	199	437	160	247	90	23	0.8	0.2	4104	
+12	Smartphone	193	199	26	16	35	8	6	0.4	0.11	986	
+13	Smartphone	194	49	26	33	48	14	6	0.6	0.12	1807	
+14	Smartphone	195	149	8	4	9	4	1	0.7	0.15	639	
+15	Smartphone	196	300	19	20	22	5	7	0.6	0.11	976	
